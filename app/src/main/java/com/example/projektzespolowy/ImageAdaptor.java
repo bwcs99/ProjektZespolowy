@@ -1,6 +1,8 @@
 package com.example.projektzespolowy;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -11,18 +13,24 @@ import java.util.List;
 
 public class ImageAdaptor extends BaseAdapter {
 
-    private List<Integer> mThumbIds;
+    private List<String> galleryPaths;
     private Context mContext;
     private View ImageView;
 
-    public ImageAdaptor ( List < Integer > mThumbIds, Context mContext ) {
-        this.mThumbIds = mThumbIds;
+    public ImageAdaptor ( List < String > galleryPaths, Context mContext ) {
+        this.galleryPaths = galleryPaths;
         this.mContext  = mContext;
+    }
+
+    protected void displayImage(ImageView imgView, String imagePath){
+
+        Bitmap imgBitmap = BitmapFactory.decodeFile(imagePath);
+        imgView.setImageBitmap(imgBitmap);
     }
 
     @Override
     public int getCount() {
-        return mThumbIds.size();
+        return galleryPaths.size();
     }
 
     @Override
@@ -32,7 +40,7 @@ public class ImageAdaptor extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return mThumbIds.get(position);
+        return (long) position;
     }
 
     @Override
@@ -42,10 +50,12 @@ public class ImageAdaptor extends BaseAdapter {
         if(imageView == null){
             imageView = new ImageView(mContext);
             imageView.setLayoutParams(new GridView.LayoutParams(50,50));
-           imageView.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            imageView.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
         }
 
-        imageView.setImageResource(mThumbIds.get(position));
+        //imageView.setImageResource(mThumbIds.get(position));
+
+        displayImage(imageView, galleryPaths.get(position));
         return imageView;
         //return convertView;
     }

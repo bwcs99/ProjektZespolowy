@@ -19,16 +19,16 @@ import android.widget.Toast;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private String PATH_TAG = "PATHS_TO_FILES";
 
-    ArrayList<Integer> mImageIds = new ArrayList<>(Arrays.asList(
-            R.drawable.image1,R.drawable.image2,R.drawable.image3,R.drawable.image4,
-            R.drawable.image5,R.drawable.image6,R.drawable.image7,R.drawable.image8));
-
     private ArrayList<String> paths = new ArrayList<>();
+    Map tags = new HashMap<String, Integer>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,21 +36,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         GridView gridView = findViewById(R.id.myGrid);
-        gridView.setAdapter(new ImageAdaptor(mImageIds, this));
+        gridView.setAdapter(new ImageAdaptor(paths, this));
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick ( AdapterView < ? > parent, View view, int position, long id ) {
-                int item_pos = mImageIds.get(position);
+
+            }
+        });
+
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                return false;
             }
         });
     }
 
-    protected void displayImage(ImageView imgView, String imagePath){
-
-        Bitmap imgBitmap = BitmapFactory.decodeFile(imagePath);
-        imgView.setImageBitmap(imgBitmap);
+    public void reverseSort(View view){
     }
+
 
     public void startPhotoActivity(View view){
 

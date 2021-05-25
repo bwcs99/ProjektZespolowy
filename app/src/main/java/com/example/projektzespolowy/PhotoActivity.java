@@ -16,18 +16,21 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class PhotoActivity extends AppCompatActivity {
 
     public String takenPicture;
     private String PATH_TAG = "PATHS_TO_FILES";
+    private String PARCELABLE_TAG = "PARCELABLE";
     private Camera camera = null;
     public String pathToFile;
     private CustomPreview preview = null;
-    public ArrayList<String> paths = new ArrayList<>();
+    public ArrayList<PhotoItem> photoItems = new ArrayList<>();
 
     private Camera.PictureCallback picture = new Camera.PictureCallback() {
         @Override
@@ -41,7 +44,12 @@ public class PhotoActivity extends AppCompatActivity {
             }
 
             pathToFile = pictureFile.getAbsolutePath();
-            paths.add(pathToFile);
+            String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+
+            String currDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+            PhotoItem newPhoto = new PhotoItem(currDate, pathToFile, Long.parseLong(timeStamp));
+            photoItems.add(newPhoto);
 
             try{
 
@@ -116,7 +124,7 @@ public class PhotoActivity extends AppCompatActivity {
 
         Intent finishIntent = new Intent();
 
-        finishIntent.putStringArrayListExtra(PATH_TAG, paths);
+        finishIntent.putParcelableArrayListExtra(PATH_TAG, photoItems);
         setResult(Activity.RESULT_OK, finishIntent);
 
         finish();

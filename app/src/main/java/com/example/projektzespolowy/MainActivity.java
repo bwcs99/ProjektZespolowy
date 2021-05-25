@@ -11,10 +11,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -25,20 +30,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<PhotoItem> items = new ArrayList<>();
+    public ArrayList<PhotoItem> items = new ArrayList<>();
     private boolean isOrderReversed = false;
-    Map tags = new HashMap<String, Integer>();
 
     public GridView gridView = null;
 
 
     private final String ARR_TAG = "ITEMS_ARRAY";
     private final String ORDER_TAG = "CURRENT_ORDER";
+
+    public String changedParcelable;
+    public String mapTag;
+    public String gridPositionTag;
 
 
 
@@ -47,15 +58,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        gridView = findViewById(R.id.myGrid);
+        changedParcelable = getString(R.string.CHANGED_PARCELABLE);
+        mapTag = getString(R.string.MAP_TAG);
+        gridPositionTag = getString(R.string.currentGridPosition);
 
-        isOrderReversed = loadOrder();
+        gridView = findViewById(R.id.myGrid);
 
         loadImageData();
 
         if(items.size() != 0){
-            sortItems();
+            sortItems(false);
         }
+
 
         gridView.setAdapter(new ImageAdapter(items, this));
 
@@ -66,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), ImagesDetails.class);
 
                 intent.putParcelableArrayListExtra(getString(R.string.PARCELABLE_TAG), items);
-                startActivity(intent);
+                intent.putExtra(gridPositionTag, position);
+                startActivityForResult(intent, 2);
 
 
             }
@@ -77,17 +92,68 @@ public class MainActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
                 showAlertDialog(position);
-                return false;
+                return true;
             }
         });
 
-        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    }
 
-                sortItems();
+
+    private ArrayList<String> prepareTagsHintsList(){
+
+        ArrayList<String> usefulTags = new ArrayList<String>();
+        ArrayList<String> photoTags;
+
+        for(PhotoItem item : items){
+
+            photoTags = item.tags;
+
+            for(String tag : photoTags){
+
+                if(usefulTags.contains(tag)){
+
+                    continue;
+
+                } else {
+
+                    usefulTags.add(tag);
+
+                }
             }
-        });
+
+        }
+
+        return usefulTags;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.first_menu, menu);
+        return true;
+
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch(item.getItemId()){
+
+            case R.id.sort:
+                sortItems(true);
+                return true;
+            case R.id.takephoto:
+                startPhotoActivity();
+                return true;
+            case R.id.search:
+                openSearchActivity();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     public void saveImageData(ArrayList<PhotoItem> list){
@@ -102,6 +168,19 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
 
     }
+
+    private void openSearchActivity(){
+
+        String hintsTag = getString(R.string.hints);
+        ArrayList<String> tagListToDisplay = prepareTagsHintsList();
+        Intent intent = new Intent(this, SearchActivity.class);
+        intent.putStringArrayListExtra(hintsTag, tagListToDisplay);
+        intent.putParcelableArrayListExtra("items", items);
+
+        startActivity(intent);
+
+    }
+
 
     public void loadImageData(){
 
@@ -119,22 +198,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void saveOrder(boolean newOrder){
-
-        SharedPreferences sp = getSharedPreferences(getString(R.string.orderState), MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-
-        editor.putBoolean(getString(R.string.orderValue), newOrder);
-        editor.apply();
-
-    }
-
-    public boolean loadOrder(){
-
-        SharedPreferences sp = getSharedPreferences(getString(R.string.orderState), MODE_PRIVATE);
-
-        return sp.getBoolean(getString(R.string.orderValue), false);
-    }
 
     private void showAlertDialog(int position){
 
@@ -154,11 +217,11 @@ public class MainActivity extends AppCompatActivity {
                 items.remove(position);
 
                 if(isDeleted[0]){
+
+                    showInfo();
                     saveImageData(items);
                     changeAdapter();
                 }
-                Log.d("PZ", "Image successfully removed !");
-
             }
         });
 
@@ -176,33 +239,70 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void showInfo(){
+
+        Toast.makeText(this,
+                "Image has been successfully deleted !",
+                Toast.LENGTH_SHORT).show();
+    }
+
     private void changeAdapter(){
         gridView.setAdapter(new ImageAdapter(items, this));
     }
 
-    public void sortItems(){
+    public void sortItems(boolean scrollToValidPosition){
+
+        int currPosition = 0;
+        long pID = 0;
+
+        if(scrollToValidPosition){
+
+             currPosition = gridView.getFirstVisiblePosition();
+             pID = items.get(currPosition).photoID;
+
+        }
 
         if(isOrderReversed){
 
             Collections.sort(items);
             isOrderReversed = false;
-            saveOrder(isOrderReversed);
             changeAdapter();
 
         } else {
 
             Collections.sort(items, Collections.reverseOrder());
             isOrderReversed = true;
-            saveOrder(isOrderReversed);
             changeAdapter();
         }
 
-        saveOrder(isOrderReversed);
+        if(scrollToValidPosition){
+
+            int newPosition = searchForPhotoWithGivenID(pID);
+            gridView.smoothScrollToPosition(newPosition);
+
+        }
+
 
     }
 
+    private int searchForPhotoWithGivenID(long id){
 
-    public void startPhotoActivity(View view){
+        int position = 0;
+
+        for(PhotoItem i : items){
+            if(i.photoID == id){
+
+                break;
+            }
+
+            position++;
+        }
+
+        return position;
+    }
+
+
+    public void startPhotoActivity(){
 
         Intent photoIntent = new Intent(this, PhotoActivity.class);
         startActivityForResult(photoIntent, 1);
@@ -233,20 +333,51 @@ public class MainActivity extends AppCompatActivity {
 
                saveImageData(items);
 
+
                if(gridView != null){
 
-                   sortItems();
+                   if(isOrderReversed){
+                       isOrderReversed = false;
+                   } else {
+                       isOrderReversed = true;
+                   }
+
+                   sortItems(false);
                    changeAdapter();
                }
+
+
+            } else if(requestCode == 2){
+
+                ArrayList<PhotoItem> temporaryArray = null;
+
+                temporaryArray = data.getParcelableArrayListExtra(changedParcelable);
+
+                if(temporaryArray != null && temporaryArray != items){
+
+                    items = temporaryArray;
+                    saveImageData(items);
+
+
+                    if(gridView != null){
+                        changeAdapter();
+                    }
+
+                }
+
 
 
             }
         }
     }
 
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
 
+        int currentGridPosition = gridView.getFirstVisiblePosition();
+
+        outState.putInt("CURRENT_POSITION", currentGridPosition);
         outState.putParcelableArrayList(ARR_TAG, items);
         outState.putBoolean(ORDER_TAG, isOrderReversed);
 
@@ -256,10 +387,19 @@ public class MainActivity extends AppCompatActivity {
     public void onRestoreInstanceState(Bundle savedInstanceState){
         super.onRestoreInstanceState(savedInstanceState);
 
+        int returnToPosition = savedInstanceState.getInt("CURRENT_POSITION", 0);
         items = savedInstanceState.getParcelableArrayList(ARR_TAG);
         isOrderReversed = savedInstanceState.getBoolean(ORDER_TAG);
 
-        sortItems();
+        if(isOrderReversed){
+            isOrderReversed = false;
+        } else{
+            isOrderReversed = true;
+        }
+
+       gridView.smoothScrollToPosition(returnToPosition);
+
+       sortItems(false);
 
     }
 }

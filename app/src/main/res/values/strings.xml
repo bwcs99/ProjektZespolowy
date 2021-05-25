@@ -1,3 +1,30 @@
 <resources>
     <string name="app_name">ProjektZespolowy</string>
+    <string name="title1">Image removal</string>
+    <string name="message1"> Are you sure?\nThis operation will permanently remove your image !</string>
+    <string name="yes1"> Yes </string>
+    <string name="no1"> No </string>
+    <string name="imagesData"> photoData </string>
+    <string name="orderState"> previousOrder </string>
+    <string name="orderValue"> value </string>
+    <string name="savedImages"> savedImages </string>
+    <string name="PARCELABLE_TAG"> parcelableArrayList </string>
+    <string name="CHANGED_PARCELABLE"> changedParcelableArrayList </string>
+    <string name="MAP_TAG"> mapWithTags </string>
+    <string name="newMapTag"> newMap </string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="okText"> Ok </string>
+    <string name="cancelText"> Cancel </string>
+    <string name="addingTagsTitle"> New tag addition </string>
+    <string name="addingTagsMessage"> Type in a new tag </string>
+    <string name="currentGridPosition"> currentGridPos </string>
+    <string name="hints"> tagHints </string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

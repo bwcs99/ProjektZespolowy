@@ -1,10 +1,13 @@
 package com.example.projektzespolowy;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -14,11 +17,13 @@ public class CustomPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private SurfaceHolder myHolder;
     private Camera myCamera;
+    private Context myContext;
 
     public CustomPreview(Context context, Camera camera){
         super(context);
 
         myCamera = camera;
+        myContext = context;
 
         myHolder = getHolder();
         myHolder.addCallback(this);
@@ -36,6 +41,8 @@ public class CustomPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
     }
+
+
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {

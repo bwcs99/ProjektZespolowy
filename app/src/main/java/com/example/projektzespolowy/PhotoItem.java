@@ -1,27 +1,36 @@
 package com.example.projektzespolowy;
 
-import java.util.ArrayList;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class PhotoItem implements Parcelable {
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+
+public class PhotoItem implements Parcelable, Comparable<PhotoItem> {
+
 
     public long photoID;
-    public String timeStamp;
+    public String date;
     public String path;
-    public ArrayList<String> tags; // tutaj bardziej pasuje set !!
+    public ArrayList<String> tags;
 
-    public PhotoItem(String timeStamp, String path, long photoID){
+    public PhotoItem(String date, String path, long photoID){
 
-        this.timeStamp = timeStamp;
+        this.date = date;
         this.path  = path;
         this.photoID = photoID;
+        this.tags = new ArrayList<>();
+
     }
+
 
     protected PhotoItem(Parcel in) {
         photoID = in.readLong();
-        timeStamp = in.readString();
+        date = in.readString();
         path = in.readString();
         tags = in.createStringArrayList();
     }
@@ -42,8 +51,8 @@ public class PhotoItem implements Parcelable {
         return this.photoID;
     }
 
-    public String getTimeStamp(){
-        return this.timeStamp;
+    public String getDate(){
+        return this.date;
     }
 
     public String getPath(){
@@ -54,8 +63,13 @@ public class PhotoItem implements Parcelable {
         return this.tags;
     }
 
-    public void setTimeStamp(String newTimeStamp){
-        this.timeStamp = newTimeStamp;
+    public void removeTag(String toRemove) { this.tags.remove(toRemove); }
+
+    public void addTag(String newTag) { if(this.tags.contains(newTag)) {
+    } else this.tags.add(newTag); }
+
+    public void setDate(String newDate){
+        this.date = newDate;
     }
 
     public void setPath(String newPath){
@@ -66,6 +80,7 @@ public class PhotoItem implements Parcelable {
         this.photoID = newID;
     }
 
+
     @Override
     public int describeContents() {
         return 0;
@@ -74,11 +89,24 @@ public class PhotoItem implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(photoID);
-        dest.writeString(timeStamp);
+        dest.writeString(date);
         dest.writeString(path);
         dest.writeStringList(tags);
     }
+
+    @Override
+    public int compareTo(PhotoItem o) {
+        return this.getDate().compareTo(o.getDate());
+    }
 }
+
+
+
+
+
+
+
+
 
 
 

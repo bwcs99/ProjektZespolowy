@@ -255,6 +255,10 @@ public class MainActivity extends AppCompatActivity {
         int currPosition = 0;
         long pID = 0;
 
+        if(items.size() <= 0){
+            return;
+        }
+
         if(scrollToValidPosition){
 
              currPosition = gridView.getFirstVisiblePosition();
